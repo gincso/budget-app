@@ -54,6 +54,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       recurringInterval: body.recurringInterval,
       recurringEndDate: body.recurringEndDate ? new Date(body.recurringEndDate) : undefined,
       isVariable: body.isVariable,
+      familyId: body.familyId || null,
       paidBy: body.paidBy,
       paidAt: body.paidAt ? new Date(body.paidAt) : undefined,
     },

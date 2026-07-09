@@ -91,6 +91,8 @@ export default function BillDetailPage() {
   const [isRecurring, setIsRecurring] = useState(false)
   const [recurringInterval, setRecurringInterval] = useState("MONTHLY")
   const [isVariable, setIsVariable] = useState(false)
+  const [familyBill, setFamilyBill] = useState(false)
+  const [familyId, setFamilyId] = useState("")
 
   useEffect(() => {
     async function fetchData() {
@@ -128,6 +130,8 @@ export default function BillDetailPage() {
     setIsRecurring(b.isRecurring)
     setRecurringInterval(b.recurringInterval || "MONTHLY")
     setIsVariable(b.isVariable)
+    setFamilyBill(!!b.familyId)
+    setFamilyId(b.familyId || "")
   }
 
   async function handleUpdate(e: React.FormEvent) {
@@ -143,6 +147,7 @@ export default function BillDetailPage() {
         isRecurring,
         recurringInterval: isRecurring ? recurringInterval : null,
         isVariable,
+        familyId: familyBill ? familyId : null,
       }
 
       const res = await fetch(`/api/bills/${id}`, {
@@ -415,7 +420,29 @@ export default function BillDetailPage() {
                   <Switch id="edit-variable" checked={isVariable} onCheckedChange={setIsVariable} />
                   <Label htmlFor="edit-variable">Variable</Label>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Switch id="edit-family" checked={familyBill} onCheckedChange={setFamilyBill} />
+                  <Label htmlFor="edit-family">Family Bill</Label>
+                </div>
               </div>
+
+              {familyBill && families.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Family</Label>
+                  <Select value={familyId} onValueChange={setFamilyId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a family" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {families.map((fam) => (
+                        <SelectItem key={fam.id} value={fam.id}>
+                          {fam.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {isRecurring && (
                 <div className="space-y-2">
