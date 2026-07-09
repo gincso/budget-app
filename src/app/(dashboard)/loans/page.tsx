@@ -11,6 +11,8 @@ import {
   Banknote,
   Percent,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -38,6 +40,8 @@ export default function LoansPage() {
   const [loans, setLoans] = useState<Loan[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const PAGE_SIZE = 12
 
   useEffect(() => {
     async function fetchLoans() {
@@ -68,6 +72,9 @@ export default function LoansPage() {
       activeLoans: active.length,
     }
   }, [loans])
+
+  const totalPages = Math.ceil(loans.length / PAGE_SIZE)
+  const paginatedLoans = loans.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   if (loading) {
     return (
@@ -162,7 +169,7 @@ export default function LoansPage() {
             </CardContent>
           </Card>
         ) : (
-          loans.map((loan) => {
+          paginatedLoans.map((loan) => {
             const progress =
               loan.totalAmount > 0
                 ? Math.min((loan.paidAmount / loan.totalAmount) * 100, 100)
@@ -222,6 +229,33 @@ export default function LoansPage() {
           })
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, loans.length)} of {loans.length}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm">{currentPage} / {totalPages}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
