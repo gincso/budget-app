@@ -10,7 +10,10 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "BudgetApp - Family Finance Manager",
-  description: "Manage your family finances together",
+  description: "Manage your family budget, bills, and finances",
+  manifest: "/manifest.json",
+  themeColor: "#18181b",
+  appleWebApp: { capable: true, title: "BudgetApp", statusBarStyle: "default" },
 }
 
 export default function RootLayout({

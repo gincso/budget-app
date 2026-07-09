@@ -4,7 +4,8 @@ import { NextResponse } from "next/server"
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
-  if (!session?.user?.id) {
+  const userId = session?.user?.id
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
@@ -24,7 +25,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
 
-  const isMember = family.members.some((m) => m.userId === session.user.id)
+  const isMember = family.members.some((m) => m.userId === userId)
   if (!isMember) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }

@@ -45,12 +45,12 @@ import type { Bill, Category } from "@/types"
 
 type BillWithCategory = Bill & { category: Category }
 
-const STATUS_VARIANT = {
-  PENDING: "default" as const,
-  PAID: "success" as const,
-  OVERRIDE: "warning" as const,
-  CANCELLED: "destructive" as const,
-} as const
+const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "destructive"> = {
+  PENDING: "default",
+  PAID: "success",
+  OVERRIDE: "warning",
+  CANCELLED: "destructive",
+}
 
 export default function BillsPage() {
   const router = useRouter()

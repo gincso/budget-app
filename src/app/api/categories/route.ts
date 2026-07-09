@@ -11,12 +11,14 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const familyId = searchParams.get("familyId")
 
-  const where: Record<string, unknown> = {
-    OR: [{ userId: session.user.id }, { isDefault: true }],
-  }
+  const orConditions: Array<Record<string, unknown>> = [
+    { userId: session.user.id },
+    { isDefault: true },
+  ]
   if (familyId) {
-    where.OR.push({ familyId })
+    orConditions.push({ familyId })
   }
+  const where = { OR: orConditions }
 
   const categories = await prisma.category.findMany({
     where,

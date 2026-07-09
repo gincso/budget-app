@@ -32,7 +32,24 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { toast } from "@/components/ui/toast"
-import type { Loan } from "@/types"
+interface LoanData {
+  id: string
+  name: string
+  totalAmount: number
+  paidAmount: number
+  interestRate: number | null
+  monthlyPayment: number | null
+  startDate: string
+  endDate: string | null
+  type: string
+  lender: string | null
+  notes: string | null
+  familyId: string | null
+  userId: string
+  status: string
+  createdAt: string
+  updatedAt: string
+}
 
 const LOAN_TYPE_VARIANTS: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
   MORTGAGE: "default",
@@ -54,7 +71,7 @@ export default function LoanDetailPage() {
   const params = useParams()
   const id = params.id as string
 
-  const [loan, setLoan] = useState<Loan | null>(null)
+  const [loan, setLoan] = useState<LoanData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
@@ -89,7 +106,7 @@ export default function LoanDetailPage() {
     fetchLoan()
   }, [id])
 
-  function populateForm(l: Loan) {
+  function populateForm(l: LoanData) {
     setName(l.name)
     setTotalAmount(String(l.totalAmount))
     setInterestRate(l.interestRate ? String(l.interestRate) : "")

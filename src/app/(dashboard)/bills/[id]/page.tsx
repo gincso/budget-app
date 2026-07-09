@@ -36,16 +36,37 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { formatCurrency, formatDate, getCategoryColor } from "@/lib/utils"
 import { toast } from "@/components/ui/toast"
-import type { Bill, Category, Family } from "@/types"
+import type { Category, Family } from "@/types"
 
-type BillWithCategory = Bill & { category: Category }
+interface BillData {
+  id: string
+  name: string
+  amount: number
+  categoryId: string
+  dueDate: string
+  status: string
+  notes: string | null
+  isRecurring: boolean
+  recurringInterval: string | null
+  recurringEndDate: string | null
+  isVariable: boolean
+  familyId: string | null
+  userId: string
+  paidBy: string | null
+  paidAt: string | null
+  createdAt: string
+  updatedAt: string
+  category: Category
+}
 
-const STATUS_VARIANT = {
-  PENDING: "default" as const,
-  PAID: "success" as const,
-  OVERRIDE: "warning" as const,
-  CANCELLED: "destructive" as const,
-} as const
+type BillWithCategory = BillData
+
+const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "destructive"> = {
+  PENDING: "default",
+  PAID: "success",
+  OVERRIDE: "warning",
+  CANCELLED: "destructive",
+}
 
 export default function BillDetailPage() {
   const router = useRouter()

@@ -1,6 +1,9 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
 }
 
 enum FamilyRole {
@@ -68,17 +71,18 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts         Account[]
-  sessions         Session[]
-  families         Family[]          @relation("FamilyCreator")
-  familyMembers    FamilyMember[]
-  bills            Bill[]
-  loans            Loan[]
-  templates        Template[]
-  billRequests     BillRequest[]     @relation("BillRequester")
-  llmConfig        LlmConfig?
-  savingsGoals     SavingsGoal[]
-  paidBills        Bill[]            @relation("BillPaidBy")
+  accounts      Account[]
+  sessions      Session[]
+  families      Family[]         @relation("FamilyCreator")
+  familyMembers FamilyMember[]
+  bills         Bill[]
+  loans         Loan[]
+  templates     Template[]
+  billRequests  BillRequest[]    @relation("BillRequester")
+  llmConfig     LlmConfig?
+  savingsGoals  SavingsGoal[]
+  paidBills     Bill[]           @relation("BillPaidBy")
+  categories    Category[]
 }
 
 model Account {
@@ -97,7 +101,6 @@ model Account {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
   @@unique([provider, providerAccountId])
 }
 
@@ -128,13 +131,13 @@ model Family {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  creator       User            @relation("FamilyCreator", fields: [createdBy], references: [id])
-  members       FamilyMember[]
-  categories    Category[]
-  bills         Bill[]
-  loans         Loan[]
-  templates     Template[]
-  savingsGoals  SavingsGoal[]
+  creator      User           @relation("FamilyCreator", fields: [createdBy], references: [id])
+  members      FamilyMember[]
+  categories   Category[]
+  bills        Bill[]
+  loans        Loan[]
+  templates    Template[]
+  savingsGoals SavingsGoal[]
 
   @@index([createdBy])
 }
@@ -167,7 +170,7 @@ model Category {
   createdAt DateTime     @default(now())
 
   user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  family       Family?       @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  family       Family?        @relation(fields: [familyId], references: [id], onDelete: Cascade)
   bills        Bill[]
   templates    Template[]
   savingsGoals SavingsGoal[]
@@ -177,28 +180,28 @@ model Category {
 }
 
 model Bill {
-  id               String            @id @default(uuid())
-  name             String
-  amount           Float
-  categoryId       String
-  dueDate          DateTime
-  status           BillStatus        @default(PENDING)
-  notes            String?
-  isRecurring      Boolean           @default(false)
+  id                String            @id @default(uuid())
+  name              String
+  amount            Float
+  categoryId        String
+  dueDate           DateTime
+  status            BillStatus        @default(PENDING)
+  notes             String?
+  isRecurring       Boolean           @default(false)
   recurringInterval RecurringInterval?
-  recurringEndDate DateTime?
-  isVariable       Boolean           @default(false)
-  familyId         String?
-  userId           String
-  paidBy           String?
-  paidAt           DateTime?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  recurringEndDate  DateTime?
+  isVariable        Boolean           @default(false)
+  familyId          String?
+  userId            String
+  paidBy            String?
+  paidAt            DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
-  category  Category      @relation(fields: [categoryId], references: [id])
-  family    Family?       @relation(fields: [familyId], references: [id], onDelete: Cascade)
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  payer     User?         @relation("BillPaidBy", fields: [paidBy], references: [id], onDelete: SetNull)
+  category  Category       @relation(fields: [categoryId], references: [id])
+  family    Family?        @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payer     User?          @relation("BillPaidBy", fields: [paidBy], references: [id], onDelete: SetNull)
   requests  BillRequest[]
 
   @@index([categoryId])

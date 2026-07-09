@@ -21,9 +21,26 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn, formatCurrency, getCategoryColor } from "@/lib/utils"
 import { Loader2, AlertCircle } from "lucide-react"
-import type { Bill, Category } from "@/types"
+import type { Category } from "@/types"
 
-type BillWithCategory = Bill & { category: Category }
+interface BillData {
+  id: string
+  name: string
+  amount: number
+  categoryId: string
+  dueDate: string
+  status: string
+  notes: string | null
+  isRecurring: boolean
+  recurringInterval: string | null
+  isVariable: boolean
+  familyId: string | null
+  userId: string
+  paidBy: string | null
+  category: Category
+}
+
+type BillWithCategory = BillData
 
 export default function CalendarPage() {
   const [bills, setBills] = useState<BillWithCategory[]>([])
