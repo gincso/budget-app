@@ -12,6 +12,8 @@ import {
   Loader2,
   AlertCircle,
   Filter,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -61,6 +63,8 @@ export default function BillsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteDialog, setDeleteDialog] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const PAGE_SIZE = 15
 
   useEffect(() => {
     async function fetchBills() {
@@ -88,6 +92,12 @@ export default function BillsPage() {
       return matchesStatus && matchesSearch
     })
   }, [bills, statusFilter, searchQuery])
+
+  const totalPages = Math.ceil(filteredBills.length / PAGE_SIZE)
+  const paginatedBills = filteredBills.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  )
 
   const handleDelete = useCallback(async (id: string) => {
     setDeleting(true)
@@ -155,12 +165,12 @@ export default function BillsPage() {
             className="flex h-9 w-full rounded-md border border-input bg-transparent px-9 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             placeholder="Search bills..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1) }}
           />
         </div>
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1) }}>
             <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>
@@ -191,14 +201,14 @@ export default function BillsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredBills.length === 0 ? (
+                {paginatedBills.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                       No bills found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredBills.map((bill) => (
+                  paginatedBills.map((bill) => (
                     <TableRow
                       key={bill.id}
                       className="cursor-pointer"
@@ -258,12 +268,12 @@ export default function BillsPage() {
           </div>
 
           <div className="divide-y md:hidden">
-            {filteredBills.length === 0 ? (
+            {paginatedBills.length === 0 ? (
               <div className="flex h-32 items-center justify-center text-muted-foreground">
                 No bills found
               </div>
             ) : (
-              filteredBills.map((bill) => (
+              paginatedBills.map((bill) => (
                 <div
                   key={bill.id}
                   className="flex cursor-pointer items-center justify-between p-4 transition-colors hover:bg-accent"
@@ -298,6 +308,33 @@ export default function BillsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredBills.length)} of {filteredBills.length}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm">{currentPage} / {totalPages}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <Dialog open={!!deleteDialog} onOpenChange={() => setDeleteDialog(null)}>
         <DialogContent>

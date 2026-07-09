@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   PanelLeft,
   LogOut,
+  Bot,
 } from "lucide-react"
 import { useSession, signOut } from "next-auth/react"
 
@@ -46,6 +47,7 @@ const navItems = [
   { href: "/calendar", label: "Calendar", icon: Calendar },
   { href: "/loans", label: "Loans", icon: Landmark },
   { href: "/reports", label: "Reports", icon: BarChart3 },
+  { href: "/ai", label: "AI Assistant", icon: Bot },
   { href: "/family", label: "Family", icon: Users },
   { href: "/templates", label: "Templates", icon: FileText },
   { href: "/categories", label: "Categories", icon: Tag },

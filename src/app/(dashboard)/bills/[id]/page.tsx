@@ -335,6 +335,12 @@ export default function BillDetailPage() {
                   Cancel
                 </Button>
               )}
+              {bill.status !== "PENDING" && (
+                <Button onClick={() => handleStatusUpdate("PENDING")} variant="outline" className="gap-1">
+                  <ArrowLeft className="h-4 w-4" />
+                  Reset to Pending
+                </Button>
+              )}
               <Button variant="outline" onClick={() => setEditing(true)} className="gap-1">
                 <SaveIcon className="h-4 w-4" />
                 Edit Bill
