@@ -1,0 +1,310 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+enum FamilyRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+enum BillStatus {
+  PENDING
+  PAID
+  OVERRIDE
+  CANCELLED
+}
+
+enum RecurringInterval {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum LoanType {
+  MORTGAGE
+  CAR
+  PERSONAL
+  STUDENT
+  CREDIT_CARD
+  OTHER
+}
+
+enum LoanStatus {
+  ACTIVE
+  PAID
+  DEFAULTED
+}
+
+enum TemplateInterval {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum BillRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts         Account[]
+  sessions         Session[]
+  families         Family[]          @relation("FamilyCreator")
+  familyMembers    FamilyMember[]
+  bills            Bill[]
+  loans            Loan[]
+  templates        Template[]
+  billRequests     BillRequest[]     @relation("BillRequester")
+  llmConfig        LlmConfig?
+  savingsGoals     SavingsGoal[]
+  paidBills        Bill[]            @relation("BillPaidBy")
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Family {
+  id         String   @id @default(uuid())
+  name       String
+  inviteCode String?  @unique
+  createdBy  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  creator       User            @relation("FamilyCreator", fields: [createdBy], references: [id])
+  members       FamilyMember[]
+  categories    Category[]
+  bills         Bill[]
+  loans         Loan[]
+  templates     Template[]
+  savingsGoals  SavingsGoal[]
+
+  @@index([createdBy])
+}
+
+model FamilyMember {
+  id       String     @id @default(uuid())
+  userId   String
+  familyId String
+  role     FamilyRole
+  joinedAt DateTime   @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, familyId])
+  @@index([userId])
+  @@index([familyId])
+}
+
+model Category {
+  id        String       @id @default(uuid())
+  name      String
+  color     String
+  icon      String?
+  type      CategoryType
+  budget    Float?
+  userId    String?
+  familyId  String?
+  isDefault Boolean      @default(false)
+  createdAt DateTime     @default(now())
+
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  family       Family?       @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  bills        Bill[]
+  templates    Template[]
+  savingsGoals SavingsGoal[]
+
+  @@index([userId])
+  @@index([familyId])
+}
+
+model Bill {
+  id               String            @id @default(uuid())
+  name             String
+  amount           Float
+  categoryId       String
+  dueDate          DateTime
+  status           BillStatus        @default(PENDING)
+  notes            String?
+  isRecurring      Boolean           @default(false)
+  recurringInterval RecurringInterval?
+  recurringEndDate DateTime?
+  isVariable       Boolean           @default(false)
+  familyId         String?
+  userId           String
+  paidBy           String?
+  paidAt           DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  category  Category      @relation(fields: [categoryId], references: [id])
+  family    Family?       @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payer     User?         @relation("BillPaidBy", fields: [paidBy], references: [id], onDelete: SetNull)
+  requests  BillRequest[]
+
+  @@index([categoryId])
+  @@index([familyId])
+  @@index([userId])
+  @@index([paidBy])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model Loan {
+  id             String     @id @default(uuid())
+  name           String
+  totalAmount    Float
+  paidAmount     Float      @default(0)
+  interestRate   Float?
+  monthlyPayment Float?
+  startDate      DateTime
+  endDate        DateTime?
+  type           LoanType
+  lender         String?
+  notes          String?
+  familyId       String?
+  userId         String
+  status         LoanStatus @default(ACTIVE)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  family Family? @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@index([userId])
+  @@index([status])
+}
+
+model Template {
+  id         String           @id @default(uuid())
+  name       String
+  amount     Float
+  categoryId String
+  interval   TemplateInterval
+  isVariable Boolean          @default(false)
+  notes      String?
+  active     Boolean          @default(true)
+  familyId   String?
+  userId     String
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  category Category @relation(fields: [categoryId], references: [id])
+  family   Family?  @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId])
+  @@index([familyId])
+  @@index([userId])
+}
+
+model BillRequest {
+  id          String            @id @default(uuid())
+  billId      String
+  requesterId String
+  status      BillRequestStatus @default(PENDING)
+  message     String?
+  createdAt   DateTime          @default(now())
+
+  bill      Bill @relation(fields: [billId], references: [id], onDelete: Cascade)
+  requester User @relation("BillRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+
+  @@index([billId])
+  @@index([requesterId])
+  @@index([status])
+}
+
+model LlmConfig {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  provider  String   @default("openai")
+  apiKey    String
+  model     String   @default("gpt-4o")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model SavingsGoal {
+  id            String    @id @default(uuid())
+  name          String
+  targetAmount  Float
+  currentAmount Float     @default(0)
+  deadline      DateTime?
+  categoryId    String?
+  familyId      String?
+  userId        String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  family   Family?   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId])
+  @@index([familyId])
+  @@index([userId])
+}
