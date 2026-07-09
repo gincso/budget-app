@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       type: body.type,
       budget: body.budget,
       userId: session.user.id,
-      familyId: body.familyId,
+      familyId: body.familyId || null,
     },
   })
 

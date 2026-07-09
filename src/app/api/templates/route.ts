@@ -46,7 +46,7 @@ export async function POST(req: Request) {
       isVariable: body.isVariable ?? false,
       notes: body.notes,
       active: body.active ?? true,
-      familyId: body.familyId,
+      familyId: body.familyId || null,
       userId: session.user.id,
     },
     include: { category: true },

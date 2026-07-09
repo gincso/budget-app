@@ -49,7 +49,7 @@ export async function POST(req: Request) {
       recurringInterval: body.recurringInterval,
       recurringEndDate: body.recurringEndDate ? new Date(body.recurringEndDate) : undefined,
       isVariable: body.isVariable ?? false,
-      familyId: body.familyId,
+      familyId: body.familyId || null,
       userId: session.user.id,
     },
     include: { category: true },

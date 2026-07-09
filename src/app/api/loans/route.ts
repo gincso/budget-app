@@ -48,7 +48,7 @@ export async function POST(req: Request) {
       type: body.type,
       lender: body.lender,
       notes: body.notes,
-      familyId: body.familyId,
+      familyId: body.familyId || null,
       userId: session.user.id,
       status: body.status ?? "ACTIVE",
     },
